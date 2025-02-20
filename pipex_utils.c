@@ -6,7 +6,7 @@
 /*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 07:03:44 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/02/20 11:36:00 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/02/20 11:52:43 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,16 +65,28 @@ void	execute_child(t_pipex *pipex, int i, int pipes[], int cmd_count, char *argv
 	execute_command(pipex, argv[i + 2]);
 }
 
-void	fork_and_execute(t_pipex *pipex, int cmd_count, char *argv[], int pipes[], int argc)
+void fork_and_execute(t_pipex *pipex, int cmd_count, char *argv[], int pipes[], int argc)
 {
-	pid_t	pids[cmd_count];
-	int		i;
- 
+	pid_t	*pids;
+	int			i;
+	
+	pids = malloc(sizeof(pid_t) * cmd_count);
+	if (!pids)
+	{
+		perror("malloc failed");
+		exit(1);
+	}
 	i = 0;
 	while (i < cmd_count)
 	{
 		pids[i] = fork();
-		if (pids[i] == 0)
+		if (pids[i] == -1)
+		{
+			perror("fork failed");
+			free(pids);  // Free before exiting on failure
+			exit(1);
+		}
+		else if (pids[i] == 0)
 			execute_child(pipex, i, pipes, cmd_count, argv, argc);
 		i++;
 	}
@@ -82,7 +94,9 @@ void	fork_and_execute(t_pipex *pipex, int cmd_count, char *argv[], int pipes[], 
 	i = 0;
 	while (i < cmd_count)
 		waitpid(pids[i++], NULL, 0);
+	free(pids);
 }
+
 
 void	process_files(int infile, int outfile)
 {
@@ -93,11 +107,3 @@ void	process_files(int infile, int outfile)
 	}
 	dup2(infile, STDIN_FILENO);
 	close(infile);
-	if (outfile == -1)
-	{
-		perror("Error opening outfile");
-		exit(1);
-	}
-	dup2(outfile, STDOUT_FILENO);
-	close(outfile);
-}
