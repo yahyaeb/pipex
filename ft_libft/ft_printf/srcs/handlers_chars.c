@@ -6,7 +6,7 @@
 /*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/23 19:46:19 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/02/16 17:55:37 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/02/20 06:55:16 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ int	handle_char(char c)
 	ft_putchar(c);
 	return (1);
 }
+
 int	handle_pointers(void *ptr)
 {
 	if (!ptr)

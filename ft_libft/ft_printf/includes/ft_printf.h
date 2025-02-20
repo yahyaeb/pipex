@@ -6,7 +6,7 @@
 /*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 14:45:43 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/02/16 17:54:55 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/02/20 06:54:46 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <unistd.h>
 # include <stdlib.h>
 # include <stdarg.h>
+# include <stdint.h>
 
 void	ft_putstr(char *s);
 void	ft_putchar(char c);
