@@ -6,7 +6,7 @@
 /*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/16 18:54:10 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/02/20 11:40:37 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/02/21 06:49:53 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,17 +28,18 @@ typedef struct s_pipex
 	char	**cmd_args;
 	char	**envp;
 	char	*valid_cmd;
+	int		cmd_count;
+	int		argc;
+	int		*pipes;
 }	t_pipex;
 
 void	create_pipes(int pipes[], int cmd_count);
 void	close_pipes(int pipes[], int pipe_count);
-void	execute_child(t_pipex *pipex, int i, int pipes[],
-			int cmd_count, char *argv[], int argc);
-void	fork_and_execute(t_pipex *pipex, int cmd_count,
-			char *argv[], int pipes[], int argc);
+void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[]);
+void fork_and_execute(t_pipex *pipex, char *argv[]);
 void	process_files(int infile, int outfile);
 int		update_count(char **path, int count);
-void	init_pipex(t_pipex *pipex, char *infile, char *outfile, char **envp);
+void init_pipex(t_pipex *pipex, char *infile, char *outfile, char **envp, int argc);
 char	*get_path_from_env(char *envp[]);
 void	filter_command(char **envp, t_pipex *pipex);
 char	*find_command(char *cmd, t_pipex *pipex);

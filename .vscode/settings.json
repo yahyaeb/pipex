@@ -1,6 +1,7 @@
 {
 	"files.associations": {
 		"algorithm": "c",
-		"format": "c"
+		"format": "c",
+		"cerrno": "c"
 	}
 }

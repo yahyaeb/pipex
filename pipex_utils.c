@@ -6,7 +6,7 @@
 /*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 07:03:44 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/02/20 11:52:43 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/02/21 10:23:43 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,66 +36,167 @@ void	close_pipes(int pipes[], int pipe_count)
 	while (i < pipe_count)
 		close(pipes[i++]);
 }
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
 
-void	execute_child(t_pipex *pipex, int i, int pipes[], int cmd_count, char *argv[], int argc)
+void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[])
 {
-	int	infile;
+    int infile, outfile;
 
-	if (i == 0)
-	{
-		infile = open(argv[1], O_RDONLY);
-		dup2(infile, STDIN_FILENO);
-		close(infile);
-		dup2(pipes[1], STDOUT_FILENO);
-	}
-	else if (i == cmd_count - 1)
-	{
-		int outfile = open(argv[argc - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		dup2(pipes[(i - 1) * 2], STDIN_FILENO);
-		dup2(outfile, STDOUT_FILENO);
-		close(outfile);
-	}
-	else
-	{
-		dup2(pipes[(i - 1) * 2], STDIN_FILENO);
-		dup2(pipes[i * 2 + 1], STDOUT_FILENO);
-	}
+    if (i == 0)
+    {
+        // Open infile
+        infile = open(argv[1], O_RDONLY);
+        if (infile == -1)
+        {
+            perror("Error opening infile");
+            fprintf(stderr, "Failed to open infile: %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        printf("Infile FD: %d\n", infile);
 
-	close_pipes(pipes, 2 * (cmd_count - 1));
-	execute_command(pipex, argv[i + 2]);
+        // Redirect stdin to infile
+        if (dup2(infile, STDIN_FILENO) == -1)
+        {
+            perror("dup2 infile error");
+            exit(EXIT_FAILURE);
+        }
+        close(infile);
+
+        // Redirect stdout to pipe
+        if (dup2(pipes[1], STDOUT_FILENO) == -1)
+        {
+            perror("dup2 pipe error");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if (i == pipex->cmd_count - 1)
+    {
+        // Open outfile
+        outfile = open(argv[pipex->argc - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (outfile == -1)
+        {
+            perror("Error opening outfile");
+            fprintf(stderr, "Failed to open outfile: %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        printf("Outfile FD: %d\n", outfile);
+
+        // Redirect stdin to previous pipe
+        if (dup2(pipes[(i - 1) * 2], STDIN_FILENO) == -1)
+        {
+            perror("dup2 infile from pipe error");
+            exit(EXIT_FAILURE);
+        }
+
+        // Redirect stdout to outfile
+        if (dup2(outfile, STDOUT_FILENO) == -1)
+        {
+            perror("dup2 outfile error");
+            exit(EXIT_FAILURE);
+        }
+        close(outfile);
+    }
+    else
+    {
+        // Redirect stdin from previous pipe
+        if (dup2(pipes[(i - 1) * 2], STDIN_FILENO) == -1)
+        {
+            perror("dup2 previous pipe error");
+            exit(EXIT_FAILURE);
+        }
+
+        // Redirect stdout to next pipe
+        if (dup2(pipes[i * 2 + 1], STDOUT_FILENO) == -1)
+        {
+            perror("dup2 next pipe error");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+
+    // Close all pipes after redirection
+    close_pipes(pipes, 2 * (pipex->cmd_count - 1));
+
+    // Execute the command
+    execute_command(pipex, argv[i + 2]);
+
+    // If exec fails, print error
+    exit(EXIT_FAILURE);
 }
 
-void fork_and_execute(t_pipex *pipex, int cmd_count, char *argv[], int pipes[], int argc)
+// void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[])
+// {
+//     int infile, outfile;
+
+//     if (i == 0)
+//     {
+//         infile = open(argv[1], O_RDONLY);
+//         if (infile == -1)
+//             perror("Error opening infile");
+//         dup2(infile, STDIN_FILENO);
+//         close(infile);
+//         dup2(pipes[1], STDOUT_FILENO);
+//     }
+//     else if (i == pipex->cmd_count - 1)
+//     {
+//         outfile = open(argv[pipex->argc - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+//         if (outfile == -1)
+//             perror("Error opening outfile");
+//         dup2(pipes[(i - 1) * 2], STDIN_FILENO);
+//         dup2(outfile, STDOUT_FILENO);
+//         close(outfile);
+//     }
+//     else
+//     {
+//         dup2(pipes[(i - 1) * 2], STDIN_FILENO);
+//         dup2(pipes[i * 2 + 1], STDOUT_FILENO);
+//     }
+
+//     // Close all pipes
+//     close_pipes(pipes, 2 * (pipex->cmd_count - 1));
+
+//     execute_command(pipex, argv[i + 2]);
+// }
+
+
+void fork_and_execute(t_pipex *pipex, char *argv[])
 {
-	pid_t	*pids;
-	int			i;
-	
-	pids = malloc(sizeof(pid_t) * cmd_count);
-	if (!pids)
-	{
-		perror("malloc failed");
-		exit(1);
-	}
-	i = 0;
-	while (i < cmd_count)
-	{
-		pids[i] = fork();
-		if (pids[i] == -1)
-		{
-			perror("fork failed");
-			free(pids);  // Free before exiting on failure
-			exit(1);
-		}
-		else if (pids[i] == 0)
-			execute_child(pipex, i, pipes, cmd_count, argv, argc);
-		i++;
-	}
-	close_pipes(pipes, 2 * (cmd_count - 1));
-	i = 0;
-	while (i < cmd_count)
-		waitpid(pids[i++], NULL, 0);
-	free(pids);
+    pid_t *pids;
+    int i;
+
+    pids = malloc(sizeof(pid_t) * pipex->cmd_count);
+    if (!pids)
+        exit(1);
+    
+    for (i = 0; i < pipex->cmd_count; i++)
+    {
+        pids[i] = fork();
+        if (pids[i] == -1)
+        {
+            perror("Fork failed");
+            free(pids);
+            exit(1);
+        }
+        else if (pids[i] == 0) // Child process
+        {
+            printf("Debug 2\n");
+            execute_child(pipex, i, pipex->pipes, argv);
+        }
+    }
+    close_pipes(pipex->pipes, 2 * (pipex->cmd_count - 1));
+
+    for (i = 0; i < pipex->cmd_count; i++)
+        waitpid(pids[i], NULL, 0);
+
+    free(pids);
 }
+
 
 
 void	process_files(int infile, int outfile)
@@ -107,3 +208,11 @@ void	process_files(int infile, int outfile)
 	}
 	dup2(infile, STDIN_FILENO);
 	close(infile);
+	if (outfile == -1)
+	{
+		perror("Error opening outfile");
+		exit(1);
+	}
+	dup2(outfile, STDOUT_FILENO);
+	close(outfile);
+}

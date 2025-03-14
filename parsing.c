@@ -6,7 +6,7 @@
 /*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 07:15:03 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/02/20 11:40:26 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/03/07 09:18:49 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ void	filter_command(char **envp, t_pipex *pipex)
 	while (path[j])
 	{
 		pipex->envp[j] = ft_strjoin(path[j], "/");
+		printf("Path[j] = %s\n", pipex->envp[j]);
 		j++;
 	}
 	pipex->envp[j] = NULL;
