@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: yel-bouk <yel-bouk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 07:03:44 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/02/21 10:23:43 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/03/18 14:57:45 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,20 +199,26 @@ void fork_and_execute(t_pipex *pipex, char *argv[])
 
 
 
-void	process_files(int infile, int outfile)
+void	process_files(t_pipex *pipex)
 {
-	if (infile == -1)
+	printf("I am here2\n");
+	if (pipex->infile == -1)
 	{
+		printf("I am here3\n");
 		perror("Error opening infile");
 		exit(1);
 	}
-	dup2(infile, STDIN_FILENO);
-	close(infile);
-	if (outfile == -1)
+	dup2(pipex->infile, STDIN_FILENO);
+	close(pipex->infile);
+	printf("I am here4\n");
+	if (pipex->outfile == -1)
 	{
+		printf("I am here5\n");
 		perror("Error opening outfile");
 		exit(1);
 	}
-	dup2(outfile, STDOUT_FILENO);
-	close(outfile);
+	printf("I am here6\n");
+	dup2(pipex->outfile, STDOUT_FILENO);
+	printf("I am here7\n");
+	close(pipex->outfile);
 }

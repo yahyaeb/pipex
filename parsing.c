@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: yel-bouk <yel-bouk@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 07:15:03 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/03/07 09:18:49 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/03/18 14:59:46 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,35 +26,33 @@ char	*get_path_from_env(char *envp[])
 	return (NULL);
 }
 
-void	filter_command(char **envp, t_pipex *pipex)
+void filter_command(t_pipex *pipex)
 {
-	int		j;
-	char	**path;
-	char	*path_value;
-	int		count;
+    int j = 0;
+    char *path_value;
 
-	j = 0;
-	count = 0;
-	path_value = get_path_from_env(envp);
-	if (!path_value)
-		return ;
-	path = ft_split(path_value, ':');
-	if (!path)
-		return ;
-	while (path[count])
-		count++;
-	pipex->envp = malloc(sizeof(char *) * (count + 1));
-	if (!pipex->envp)
-		return ;
-	while (path[j])
-	{
-		pipex->envp[j] = ft_strjoin(path[j], "/");
-		printf("Path[j] = %s\n", pipex->envp[j]);
-		j++;
+    path_value = get_path_from_env(pipex->envp);
+    if (!path_value)
+    {
+        perror("Error: PATH variable not found");
+        exit(1);
 	}
-	pipex->envp[j] = NULL;
-	free_str_array(path);
+    pipex->cmd_paths = ft_split(path_value, ':');
+    if (!pipex->cmd_paths)
+    {
+        perror("Error: Failed to split PATH");
+        exit(1);
+    }
+    while (pipex->cmd_paths[j])
+    {
+        char *temp = ft_strjoin(pipex->cmd_paths[j], "/");
+        free(pipex->cmd_paths[j]); 
+        pipex->cmd_paths[j] = temp;
+        printf("Path[j] = %s\n", pipex->cmd_paths[j]);
+        j++;
+    }
 }
+
 
 char	*find_command(char *cmd, t_pipex *pipex)
 {
@@ -75,19 +73,17 @@ char	*find_command(char *cmd, t_pipex *pipex)
 	return (NULL);
 }
 
-void	handle_single_command(t_pipex *pipex, int argc, char *argv[])
+void	handle_single_command(t_pipex *pipex)
 {
 	pid_t	pid;
-	int		infile;
-	int		outfile;
 
 	pid = fork();
 	if (pid == 0)
 	{
-		infile = open(argv[1], O_RDONLY);
-		outfile = open(argv[argc - 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-		process_files(infile, outfile);
-		execute_command(pipex, argv[2]);
+		printf("I am here\n");
+		process_files(pipex);
+		printf("I am hereXX\n");
+		execute_command(pipex, pipex->argv[2]);
 	}
 	waitpid(pid, NULL, 0);
 }
