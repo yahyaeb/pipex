@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: yel-bouk <yel-bouk@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yel-bouk <yel-bouk@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/16 18:55:38 by yel-bouk          #+#    #+#             */
-/*   Updated: 2025/03/18 14:53:54 by yel-bouk         ###   ########.fr       */
+/*   Updated: 2025/02/21 10:01:37 by yel-bouk         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,20 +24,16 @@ void init_pipex(t_pipex *pipex, char *infile, char *outfile, char **envp, int ar
 {
     pipex->infile = open(infile, O_RDONLY);
     if (pipex->infile == -1)
-    {
         perror("Error opening infile");
-        pipex->infile = -1; // Mark as invalid for later handling
-    }
-	pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (pipex->outfile == -1)
-	{
-		perror("Error opening outfile");
-		pipex->outfile = -1; // Mark as invalid for later handling
-	}
+
+    pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (pipex->outfile == -1)
+        perror("Error opening outfile");
 
     pipex->cmd_count = argc - 3;
     pipex->envp = envp;
     pipex->argc = argc;  // ✅ Store argc for later use
+    
 }
 
 
@@ -60,34 +56,42 @@ void execute_command(t_pipex *pipex, char *cmd)
 }
 
 
-void	fork_processes(t_pipex *pipex)
+void fork_processes(t_pipex *pipex)
 {
-	
-	pipex->pipes = malloc(sizeof(int) * 2 * (pipex->cmd_count - 1));
-	if (!pipex->pipes )
-	{
-		perror("malloc failed");
-		exit(1);
-	}
-	if (pipex->cmd_count == 1)
-	{
-		printf("Debug1\n");
-		handle_single_command(pipex);
-		free(pipex->pipes);
-		return;
-	}
+    int *pipes;
 
-	create_pipes(pipex->pipes, pipex->cmd_count);
-	fork_and_execute(pipex, pipex->argv);
-	free(pipex->pipes);
+    printf("cmd->count %d\n", pipex->cmd_count);
+
+    pipes = malloc(sizeof(int) * 2 * (pipex->cmd_count - 1));
+    if (!pipes)
+    {
+        perror("malloc failed");
+        exit(1);
+    }
+
+    pipex->pipes = pipes; // ✅ Store pipes in pipex to avoid memory issues
+
+    if (pipex->cmd_count == 1)
+    {
+        handle_single_command(pipex, pipex->argv[2]); // ✅ Pass correct command
+        free(pipes);
+        return;
+    }
+
+    create_pipes(pipes, pipex->cmd_count - 1); // ✅ Pass correct number of pipes
+    fork_and_execute(pipex, pipex->argv);
+    free(pipes);
 }
+
 
 int main(int argc, char *argv[], char *envp[])
 {
     t_pipex pipex;
 
 
+
     init_pipex(&pipex, argv[1], argv[argc - 1], envp, argc);
+    pipex.argv = argv;
     filter_command(&pipex);
     fork_processes(&pipex);
     free_str_array(pipex.envp);

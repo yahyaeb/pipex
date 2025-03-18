@@ -54,39 +54,123 @@ void filter_command(t_pipex *pipex)
 }
 
 
-char	*find_command(char *cmd, t_pipex *pipex)
+char *find_command(char *cmd, t_pipex *pipex)
 {
-	int		i;
-	char	*full_cmd;
+    int i;
+    char *full_cmd;
 
-	i = 0;
-	if (!cmd || !pipex->envp)
-		return (NULL);
-	while (pipex->envp[i])
-	{
-		full_cmd = ft_strjoin(pipex->envp[i], cmd);
-		if (access(full_cmd, X_OK) == 0)
-			return (full_cmd);
-		free(full_cmd);
-		i++;
-	}
-	return (NULL);
+    i = 0;
+    if (!cmd || !pipex->cmd_paths) // ✅ Check correct variable
+        return (NULL);
+
+    while (pipex->cmd_paths[i])
+    {
+        full_cmd = ft_strjoin(pipex->cmd_paths[i], cmd); // ✅ Use cmd_paths, not envp
+        if (access(full_cmd, X_OK) == 0) // ✅ Check if command is executable
+            return (full_cmd);
+
+        free(full_cmd); // ✅ Prevent memory leak
+        i++;
+    }
+    return (NULL); // ❌ Command not found
 }
 
-void	handle_single_command(t_pipex *pipex)
-{
-	pid_t	pid;
 
-	pid = fork();
-	if (pid == 0)
-	{
-		printf("I am here\n");
-		process_files(pipex);
-		printf("I am hereXX\n");
-		execute_command(pipex, pipex->argv[2]);
-	}
-	waitpid(pid, NULL, 0);
+void handle_single_command(t_pipex *pipex, char *cmd)
+{
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+        perror("Error: fork() failed");
+        exit(1);
+    }
+
+    if (pid == 0) // Child process
+    {
+        printf("Command received: %s\n", cmd);
+        fflush(stdout);
+
+        if (!cmd)
+        {
+            perror("Error: Command is NULL");
+            exit(1);
+        }
+
+        // ✅ Prevent freeing NULL pointer
+        if (pipex->cmd_args)
+        {
+            free_str_array(pipex->cmd_args);
+            pipex->cmd_args = NULL;
+        }
+
+        // ✅ Initialize cmd_args
+        pipex->cmd_args = ft_split(cmd, ' ');
+        if (!pipex->cmd_args || !pipex->cmd_args[0])
+        {
+            perror("Error: Failed to parse command arguments");
+            exit(1);
+        }
+
+        printf("cmd_args[0]: %s\n", pipex->cmd_args[0]);
+        fflush(stdout);
+
+        // ✅ Find the correct executable path
+        pipex->valid_cmd = find_command(pipex->cmd_args[0], pipex);
+        if (!pipex->valid_cmd)
+        {
+            perror("Error: Command not found or not executable");
+            exit(127);
+        }
+
+        printf("Valid command: %s\n", pipex->valid_cmd);
+        fflush(stdout);
+
+        // ✅ Prevent Segfault by Checking FDs Before dup2()
+        if (fcntl(pipex->infile, F_GETFD) == -1)
+        {
+            perror("Error: infile FD is invalid before dup2");
+            exit(1);
+        }
+        if (fcntl(pipex->outfile, F_GETFD) == -1)
+        {
+            perror("Error: outfile FD is invalid before dup2");
+            exit(1);
+        }
+
+        printf("I am here0\n");
+        fflush(stdout);
+
+        if (dup2(pipex->infile, STDIN_FILENO) == -1)
+        {
+            perror("dup2 infile failed");
+            exit(1);
+        }
+        printf("I am here1\n");
+        fflush(stdout);
+
+        if (dup2(pipex->outfile, STDOUT_FILENO) == -1)
+        {
+            perror("dup2 outfile failed");
+            exit(1);
+        }
+        printf("I am here2\n");
+        fflush(stdout);
+
+        close(pipex->infile);
+        close(pipex->outfile);
+
+        execve(pipex->valid_cmd, pipex->cmd_args, pipex->envp);
+
+        perror("execve failed");
+        exit(1);
+    }
+
+    wait(NULL);
 }
+
+
+
 
 void	free_str_array(char **array)
 {

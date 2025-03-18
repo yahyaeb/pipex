@@ -217,8 +217,15 @@ void	process_files(t_pipex *pipex)
 		perror("Error opening outfile");
 		exit(1);
 	}
+    printf("Hello\n");
 	printf("I am here6\n");
-	dup2(pipex->outfile, STDOUT_FILENO);
+    if (fcntl(pipex->outfile, F_GETFD) == -1)
+        perror("outfile FD is already closed");
+if (dup2(pipex->outfile, STDOUT_FILENO) == -1)
+    {
+        perror("dup2 outfile failed");
+        exit(1);
+    }
 	printf("I am here7\n");
 	close(pipex->outfile);
 }

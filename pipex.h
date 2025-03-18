@@ -47,6 +47,6 @@ char	*get_path_from_env(char *envp[]);
 void	filter_command(t_pipex *pipex);
 char	*find_command(char *cmd, t_pipex *pipex);
 void	execute_command(t_pipex *pipex, char *cmd);
-void	handle_single_command(t_pipex *pipex);
+void	handle_single_command(t_pipex *pipex, char *cmd);
 void	fork_processes(t_pipex *pipex);
 void	free_str_array(char **array);
