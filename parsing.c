@@ -48,7 +48,6 @@ void filter_command(t_pipex *pipex)
         char *temp = ft_strjoin(pipex->cmd_paths[j], "/");
         free(pipex->cmd_paths[j]); 
         pipex->cmd_paths[j] = temp;
-        printf("Path[j] = %s\n", pipex->cmd_paths[j]);
         j++;
     }
 }
@@ -96,15 +95,12 @@ void handle_single_command(t_pipex *pipex, char *cmd)
             perror("Error: Command is NULL");
             exit(1);
         }
-
-        // ✅ Prevent freeing NULL pointer
         if (pipex->cmd_args)
         {
+			printf("I am hereX2X");
             free_str_array(pipex->cmd_args);
             pipex->cmd_args = NULL;
         }
-
-        // ✅ Initialize cmd_args
         pipex->cmd_args = ft_split(cmd, ' ');
         if (!pipex->cmd_args || !pipex->cmd_args[0])
         {
@@ -112,10 +108,7 @@ void handle_single_command(t_pipex *pipex, char *cmd)
             exit(1);
         }
 
-        printf("cmd_args[0]: %s\n", pipex->cmd_args[0]);
         fflush(stdout);
-
-        // ✅ Find the correct executable path
         pipex->valid_cmd = find_command(pipex->cmd_args[0], pipex);
         if (!pipex->valid_cmd)
         {
@@ -123,38 +116,31 @@ void handle_single_command(t_pipex *pipex, char *cmd)
             exit(127);
         }
 
-        printf("Valid command: %s\n", pipex->valid_cmd);
         fflush(stdout);
 
-        // ✅ Prevent Segfault by Checking FDs Before dup2()
-        if (fcntl(pipex->infile, F_GETFD) == -1)
-        {
-            perror("Error: infile FD is invalid before dup2");
-            exit(1);
-        }
-        if (fcntl(pipex->outfile, F_GETFD) == -1)
-        {
-            perror("Error: outfile FD is invalid before dup2");
-            exit(1);
-        }
+	if (pipex->infile == -1)
+	{
+		perror("Error: infile FD is invalid before dup2");
+		exit(1);
+	}
+	if (pipex->outfile == -1)
+	{
+		perror("Error: outfile FD is invalid before dup2");
+		exit(1);
+	}
 
-        printf("I am here0\n");
-        fflush(stdout);
 
-        if (dup2(pipex->infile, STDIN_FILENO) == -1)
-        {
-            perror("dup2 infile failed");
-            exit(1);
-        }
-        printf("I am here1\n");
-        fflush(stdout);
+	if (dup2(pipex->infile, STDIN_FILENO) == -1)
+	{
+		perror("dup2 infile failed");
+		exit(1);
+	}
 
-        if (dup2(pipex->outfile, STDOUT_FILENO) == -1)
-        {
-            perror("dup2 outfile failed");
-            exit(1);
-        }
-        printf("I am here2\n");
+	if (dup2(pipex->outfile, STDOUT_FILENO) == -1)
+	{
+		perror("dup2 outfile failed");
+		exit(1);
+	}
         fflush(stdout);
 
         close(pipex->infile);

@@ -58,29 +58,23 @@ void execute_command(t_pipex *pipex, char *cmd)
 
 void fork_processes(t_pipex *pipex)
 {
-    int *pipes;
 
-    printf("cmd->count %d\n", pipex->cmd_count);
-
-    pipes = malloc(sizeof(int) * 2 * (pipex->cmd_count - 1));
-    if (!pipes)
+    pipex->pipes = malloc(sizeof(int) * 2 * (pipex->cmd_count - 1));
+    if (!pipex->pipes)
     {
         perror("malloc failed");
         exit(1);
     }
 
-    pipex->pipes = pipes; // ✅ Store pipes in pipex to avoid memory issues
-
     if (pipex->cmd_count == 1)
     {
         handle_single_command(pipex, pipex->argv[2]); // ✅ Pass correct command
-        free(pipes);
+        free(pipex->pipes);
         return;
     }
-
-    create_pipes(pipes, pipex->cmd_count - 1); // ✅ Pass correct number of pipes
+    create_pipes(pipex->pipes, pipex->cmd_count); // ✅ Pass correct number of pipes
     fork_and_execute(pipex, pipex->argv);
-    free(pipes);
+    free(pipex->pipes);
 }
 
 
@@ -94,7 +88,6 @@ int main(int argc, char *argv[], char *envp[])
     pipex.argv = argv;
     filter_command(&pipex);
     fork_processes(&pipex);
-    free_str_array(pipex.envp);
 
     return (0);
 }

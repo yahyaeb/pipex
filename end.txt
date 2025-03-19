@@ -1,2 +1,17 @@
-I am here2
-this is a test error chanageajpgaish;odg;ang;ajbg;ajbg;ajbfg;jsdfg;sjdg;dgjnglabkhgkahvdsfhavsdkfjhasdjhfasdkfhgwuayef aksdgfasd gfkahsdf kajdhsf akjdhsvfkj ahvsdfkha vsdf khds fjkav sdfkj2 3r y 93y349183749y18294 8y194uh1 91y91hihfkf
+     1	Makefile$
+     2	pipex.h$
+     3	parsing.o$
+     4	parsing.c$
+     5	pipex.c$
+     6	pipex.o$
+     7	.vscode$
+     8	pipex_utils.o$
+     9	pipex$
+    10	..$
+    11	start.txt$
+    12	end.txt$
+    13	.$
+    14	outfile$
+    15	ft_libft$
+    16	pipex_utils.c$
+    17	.git$

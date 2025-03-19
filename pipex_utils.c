@@ -17,7 +17,7 @@ void	create_pipes(int pipes[], int cmd_count)
 	int	i;
 
 	i = 0;
-	while (i < cmd_count - 1)
+	while (i < cmd_count)
 	{
 		if (pipe(pipes + (i * 2)) == -1)
 		{
@@ -58,7 +58,7 @@ void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[])
             fprintf(stderr, "Failed to open infile: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
-        printf("Infile FD: %d\n", infile);
+
 
         // Redirect stdin to infile
         if (dup2(infile, STDIN_FILENO) == -1)
@@ -85,7 +85,6 @@ void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[])
             fprintf(stderr, "Failed to open outfile: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
-        printf("Outfile FD: %d\n", outfile);
 
         // Redirect stdin to previous pipe
         if (dup2(pipes[(i - 1) * 2], STDIN_FILENO) == -1)
@@ -169,12 +168,12 @@ void fork_and_execute(t_pipex *pipex, char *argv[])
 {
     pid_t *pids;
     int i;
-
+    i = 0;
     pids = malloc(sizeof(pid_t) * pipex->cmd_count);
     if (!pids)
         exit(1);
     
-    for (i = 0; i < pipex->cmd_count; i++)
+    while( i < pipex->cmd_count)
     {
         pids[i] = fork();
         if (pids[i] == -1)
@@ -184,15 +183,16 @@ void fork_and_execute(t_pipex *pipex, char *argv[])
             exit(1);
         }
         else if (pids[i] == 0) // Child process
-        {
-            printf("Debug 2\n");
             execute_child(pipex, i, pipex->pipes, argv);
-        }
+        i++;
     }
     close_pipes(pipex->pipes, 2 * (pipex->cmd_count - 1));
-
-    for (i = 0; i < pipex->cmd_count; i++)
+    i = 0;
+    while ( i < pipex->cmd_count)
+    {
         waitpid(pids[i], NULL, 0);
+        i++;
+    }
 
     free(pids);
 }
@@ -201,24 +201,18 @@ void fork_and_execute(t_pipex *pipex, char *argv[])
 
 void	process_files(t_pipex *pipex)
 {
-	printf("I am here2\n");
 	if (pipex->infile == -1)
 	{
-		printf("I am here3\n");
 		perror("Error opening infile");
 		exit(1);
 	}
 	dup2(pipex->infile, STDIN_FILENO);
 	close(pipex->infile);
-	printf("I am here4\n");
 	if (pipex->outfile == -1)
 	{
-		printf("I am here5\n");
 		perror("Error opening outfile");
 		exit(1);
 	}
-    printf("Hello\n");
-	printf("I am here6\n");
     if (fcntl(pipex->outfile, F_GETFD) == -1)
         perror("outfile FD is already closed");
 if (dup2(pipex->outfile, STDOUT_FILENO) == -1)
@@ -226,6 +220,5 @@ if (dup2(pipex->outfile, STDOUT_FILENO) == -1)
         perror("dup2 outfile failed");
         exit(1);
     }
-	printf("I am here7\n");
 	close(pipex->outfile);
 }
