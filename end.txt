@@ -1,17 +1,1 @@
-     1	Makefile$
-     2	pipex.h$
-     3	parsing.o$
-     4	parsing.c$
-     5	pipex.c$
-     6	pipex.o$
-     7	.vscode$
-     8	pipex_utils.o$
-     9	pipex$
-    10	..$
-    11	start.txt$
-    12	end.txt$
-    13	.$
-    14	outfile$
-    15	ft_libft$
-    16	pipex_utils.c$
-    17	.git$
+hello

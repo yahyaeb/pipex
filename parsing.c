@@ -95,12 +95,11 @@ void handle_single_command(t_pipex *pipex, char *cmd)
             perror("Error: Command is NULL");
             exit(1);
         }
-        if (pipex->cmd_args)
-        {
-			printf("I am hereX2X");
-            free_str_array(pipex->cmd_args);
-            pipex->cmd_args = NULL;
-        }
+        // if (pipex->cmd_args)
+        // {
+        //     free_str_array(pipex->cmd_args);
+        //     pipex->cmd_args = NULL;
+        // }
         pipex->cmd_args = ft_split(cmd, ' ');
         if (!pipex->cmd_args || !pipex->cmd_args[0])
         {
@@ -154,9 +153,6 @@ void handle_single_command(t_pipex *pipex, char *cmd)
 
     wait(NULL);
 }
-
-
-
 
 void	free_str_array(char **array)
 {

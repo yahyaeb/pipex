@@ -77,7 +77,6 @@ void fork_processes(t_pipex *pipex)
     free(pipex->pipes);
 }
 
-
 int main(int argc, char *argv[], char *envp[])
 {
     t_pipex pipex;
@@ -88,7 +87,7 @@ int main(int argc, char *argv[], char *envp[])
     pipex.argv = argv;
     filter_command(&pipex);
     fork_processes(&pipex);
-
+    free_str_array(pipex.cmd_paths);
     return (0);
 }
 
