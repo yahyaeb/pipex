@@ -11,6 +11,31 @@
 /* ************************************************************************** */
 
 #include "pipex.h"
+#include <unistd.h>
+
+void handle_here_doc(char *limiter)
+{
+    int fd = open(".here_doc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    char *line;
+
+    if (fd == -1)
+    {
+        perror("Error creating temporary here_doc file");
+        exit(1);
+    }
+
+    while (1)
+    {
+        write(STDOUT_FILENO, "> ", 2);  // Prompt
+        line = get_next_line(STDIN_FILENO);
+        if (!line || ft_strcmp(line, limiter) == 0)
+            break;
+
+        write(fd, line, ft_strlen(line));
+        free(line);
+    }
+    close(fd);
+}
 
 int	update_count(char **path, int count)
 {
@@ -22,18 +47,29 @@ int	update_count(char **path, int count)
 
 void init_pipex(t_pipex *pipex, char *infile, char *outfile, char **envp, int argc)
 {
+    if (ft_strcmp(pipex->argv[1], "here_doc") == 0)
+    {
+        pipex->here_doc = 1;  // Mark as here_doc mode
+        handle_here_doc(pipex->argv[2]);  // Read input from stdin
+    }
+
     pipex->infile = open(infile, O_RDONLY);
     if (pipex->infile == -1)
+    {
         perror("Error opening infile");
+        exit(0);
+    }
 
-    pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
     if (pipex->outfile == -1)
+    {
         perror("Error opening outfile");
+        exit(0);
+    }
 
     pipex->cmd_count = argc - 3;
     pipex->envp = envp;
     pipex->argc = argc;  // ✅ Store argc for later use
-    
 }
 
 
@@ -46,15 +82,17 @@ void execute_command(t_pipex *pipex, char *cmd)
     if (!pipex->valid_cmd)
     {
         perror("Command not found");
+        free_str_array(pipex->cmd_paths);
+        free_str_array(pipex->cmd_args);
+        free(pipex->pids);
+        free(pipex->pipes);
         exit(127);
     }
-
     execve(pipex->valid_cmd, pipex->cmd_args, pipex->envp);
     
     perror("Execve failed");
     exit(1);
 }
-
 
 void fork_processes(t_pipex *pipex)
 {
@@ -79,6 +117,8 @@ void fork_processes(t_pipex *pipex)
 
 int main(int argc, char *argv[], char *envp[])
 {
+    if(argc < 4)
+        return 0;
     t_pipex pipex;
 
 

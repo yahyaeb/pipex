@@ -33,6 +33,8 @@ typedef struct s_pipex
 	char	**envp;        // Environment variables
 	char	*valid_cmd;    // Resolved command path
 	int		exit_status;   // Track last command’s exit status
+	int		here_doc;
+	pid_t *pids;
 }	t_pipex;
 
 

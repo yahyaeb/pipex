@@ -172,23 +172,24 @@ void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[])
 
 void fork_and_execute(t_pipex *pipex, char *argv[])
 {
-    pid_t *pids;
     int i;
     i = 0;
-    pids = malloc(sizeof(pid_t) * pipex->cmd_count);
-    if (!pids)
+    pipex->pids = malloc(sizeof(pid_t) * pipex->cmd_count);
+    if (!pipex->pids)
+    {
         exit(1);
+    }
     
     while( i < pipex->cmd_count)
     {
-        pids[i] = fork();
-        if (pids[i] == -1)
+        pipex->pids[i] = fork();
+        if (pipex->pids[i] == -1)
         {
             perror("Fork failed");
-            free(pids);
+            free(pipex->pids);
             exit(1);
         }
-        else if (pids[i] == 0) // Child process
+        else if (pipex->pids[i] == 0) // Child process
             execute_child(pipex, i, pipex->pipes, argv);
         i++;
     }
@@ -196,11 +197,11 @@ void fork_and_execute(t_pipex *pipex, char *argv[])
     i = 0;
     while ( i < pipex->cmd_count)
     {
-        waitpid(pids[i], NULL, 0);
+        waitpid(pipex->pids[i], NULL, 0);
         i++;
     }
 
-    free(pids);
+    free(pipex->pids);
 }
 
 
