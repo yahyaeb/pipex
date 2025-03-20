@@ -12,21 +12,27 @@
 
 #include "pipex.h"
 
-void	create_pipes(int pipes[], int cmd_count)
+void create_pipes(int *pipes, int cmd_count)
 {
-	int	i;
+    int i = 0;
+    
+    if (!pipes)  // ✅ Ensure pipes[] is allocated before using it!
+    {
+        fprintf(stderr, "Error: pipes array is NULL!\n");
+        exit(1);
+    }
 
-	i = 0;
-	while (i < cmd_count)
-	{
-		if (pipe(pipes + (i * 2)) == -1)
-		{
-			perror("Pipe creation failed");
-			exit(1);
-		}
-		i++;
-	}
+    while (i < cmd_count - 1)  // ✅ cmd_count - 1, because you need (cmd_count - 1) pipes
+    {
+        if (pipe(pipes + (i * 2)) == -1)
+        {
+            perror("Pipe creation failed");
+            exit(1);
+        }
+        i++;
+    }
 }
+
 
 void	close_pipes(int pipes[], int pipe_count)
 {
