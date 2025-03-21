@@ -67,7 +67,7 @@ char *find_command(char *cmd, t_pipex *pipex)
         full_cmd = ft_strjoin(pipex->cmd_paths[i], cmd); // ✅ Use cmd_paths, not envp
         if (access(full_cmd, X_OK) == 0) // ✅ Check if command is executable
             return (full_cmd);
-
+    
         free(full_cmd); // ✅ Prevent memory leak
         i++;
     }
@@ -95,11 +95,8 @@ void handle_single_command(t_pipex *pipex, char *cmd)
             perror("Error: Command is NULL");
             exit(1);
         }
-        // if (pipex->cmd_args)
-        // {
-        //     free_str_array(pipex->cmd_args);
-        //     pipex->cmd_args = NULL;
-        // }
+
+            
         pipex->cmd_args = ft_split(cmd, ' ');
         if (!pipex->cmd_args || !pipex->cmd_args[0])
         {
@@ -150,7 +147,7 @@ void handle_single_command(t_pipex *pipex, char *cmd)
         perror("execve failed");
         exit(1);
     }
-
+    
     wait(NULL);
 }
 

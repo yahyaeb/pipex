@@ -52,3 +52,4 @@ void	execute_command(t_pipex *pipex, char *cmd);
 void	handle_single_command(t_pipex *pipex, char *cmd);
 void	fork_processes(t_pipex *pipex);
 void	free_str_array(char **array);
+void	free_pipex(t_pipex *pipex);
