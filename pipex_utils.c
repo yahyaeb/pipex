@@ -56,6 +56,12 @@ void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[])
 
     if (i == 0)
     {
+        if (pipex->infile == -1)
+        {
+            // Prevent pipeline from running
+            close_pipes(pipes, 2 * (pipex->cmd_count - 1));
+            exit(1);
+        }
         dup2(pipex->infile, STDIN_FILENO);
         dup2(pipes[1], STDOUT_FILENO);
     }

@@ -43,6 +43,35 @@
 //     close(fd);
 // }
 
+void free_pipex(t_pipex *pipex)
+{
+    if (pipex->cmd_paths)
+    {
+        free_str_array(pipex->cmd_paths);
+        pipex->cmd_paths = NULL;
+    }
+    if (pipex->cmd_args)
+    {
+        free_str_array(pipex->cmd_args);
+        pipex->cmd_args = NULL;
+    }
+    if (pipex->pipes)
+    {
+        free(pipex->pipes);
+        pipex->pipes = NULL;
+    }
+    if (pipex->pids)
+    {
+        free(pipex->pids);
+        pipex->pids = NULL;
+    }
+}
+
+void	exit_with_cleanup(t_pipex *pipex, int status)
+{
+	free_pipex(pipex);
+	exit(status);
+}
 
 int	update_count(char **path, int count)
 {
@@ -54,26 +83,50 @@ int	update_count(char **path, int count)
 
 void init_pipex(t_pipex *pipex, char *infile, char *outfile, char **envp, int argc)
 {
+    pipex->here_doc = 0;
 
+    if (ft_strncmp(infile, "here_doc", 8) == 0)
+    {
+        pipex->here_doc = 1;
+
+        // Prepare .here_doc_tmp from STDIN
+        int fd = open(".here_doc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd == -1)
+            perror("here_doc tmp file creation failed");
+
+        char buf[1024];
+        ssize_t n;
+        while ((n = read(0, buf, 1024)) > 0)
+        {
+            // Check if limiter was entered
+            if (ft_strncmp(buf, outfile, ft_strlen(outfile)) == 0)
+                break;
+            write(fd, buf, n);
+        }
+        close(fd);
 
         pipex->infile = open(".here_doc_tmp", O_RDONLY);
-        if (pipex->infile == -1)
-            perror("Error opening here_doc temp file");
-
         pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
-
+    }
+    else
+    {
         pipex->infile = open(infile, O_RDONLY);
         if (pipex->infile == -1)
+        {   
             perror("Error opening infile");
+        }
 
         pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    }
 
+    if (pipex->outfile == -1)
+        perror("Error opening outfile");
 
     pipex->cmd_count = argc - 3;
     pipex->envp = envp;
-    pipex->argc = argc;  // ✅ Store argc for later use
-    
+    pipex->argc = argc;
 }
+
 
 
 void execute_command(t_pipex *pipex, char *cmd)
@@ -139,6 +192,9 @@ int main(int argc, char *argv[], char *envp[])
         filter_command(&pipex);
         fork_processes(&pipex);
         free_str_array(pipex.cmd_paths);
+        if (pipex.here_doc)
+            unlink(".here_doc_tmp");
+
         return (pipex.exit_status); 
 
     }

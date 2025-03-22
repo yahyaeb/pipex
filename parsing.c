@@ -67,6 +67,7 @@ char *find_command(char *cmd, t_pipex *pipex)
         full_cmd = ft_strjoin(pipex->cmd_paths[i], cmd); // ✅ Use cmd_paths, not envp
         if (access(full_cmd, X_OK) == 0) // ✅ Check if command is executable
             return (full_cmd);
+
         free(full_cmd); // ✅ Prevent memory leak
         i++;
     }
