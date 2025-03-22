@@ -54,26 +54,20 @@ int	update_count(char **path, int count)
 
 void init_pipex(t_pipex *pipex, char *infile, char *outfile, char **envp, int argc)
 {
-    if (ft_strncmp(pipex->argv[1], "here_doc", 8) == 0)
-    {
-        pipex->here_doc = 1;
-        handle_here_doc(pipex->argv[2]); // write input to .here_doc_tmp
+
 
         pipex->infile = open(".here_doc_tmp", O_RDONLY);
         if (pipex->infile == -1)
             perror("Error opening here_doc temp file");
 
         pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
-    }
-    else
-    {
-        pipex->here_doc = 0;
-        pipex->infile = open(pipex->argv[1], O_RDONLY);
+
+        pipex->infile = open(infile, O_RDONLY);
         if (pipex->infile == -1)
             perror("Error opening infile");
 
         pipex->outfile = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    }
+
 
     pipex->cmd_count = argc - 3;
     pipex->envp = envp;
