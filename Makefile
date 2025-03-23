@@ -17,9 +17,7 @@ CFLAGS = -g -Werror -Wextra -Wall
 LIBFT_DIR = ft_libft  # Ensure this is the correct relative path
 LIBFT = ./ft_libft/ft_libft.a  # Corrected path
 
-SRCS = pipex.c \
-    #    pipex.c \
-    #    pipex_utils.c
+SRCS = pipex.c 
 
 OBJS = $(SRCS:.c=.o)
 
