@@ -124,12 +124,16 @@ void ft_parse_cmds(t_pipex *pipex, char **argv)
         pipex->cmd_args[i] = ft_split(argv[i + 2], ' ');
         if (!pipex->cmd_args[i] || !pipex->cmd_args[i][0])
         {
+            if (pipex->cmd_args[i])
+                ft_free_array(pipex->cmd_args[i], -1); // 💡 Free current entry before exit
             fprintf(stderr, "pipex: command not found\n");
             while (--i >= 0)
                 ft_free_array(pipex->cmd_args[i], -1);
             free(pipex->cmd_args);
             exit(127);
         }
+
+
         i++;
     }
 }
