@@ -180,6 +180,7 @@ void ft_execute_pipex(t_pipex *pipex)
         if (pipex->in_fd == -1 || dup2(pipex->in_fd, STDIN_FILENO) == -1 || dup2(pipefd[1], STDOUT_FILENO) == -1)
         {
             free(cmd_path);
+            free_pipex(pipex);
             perror("pipex: input redirection");
             exit(1);
         }
@@ -207,6 +208,7 @@ void ft_execute_pipex(t_pipex *pipex)
         if (dup2(pipefd[0], STDIN_FILENO) == -1 || pipex->out_fd == -1 || dup2(pipex->out_fd, STDOUT_FILENO) == -1)
         {
             free(cmd_path);
+            free_pipex(pipex);
             perror("pipex: output redirection");
             exit(1);
         }
