@@ -10,46 +10,39 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_libft/libft/libft.h"
-#include "ft_libft/ft_printf/includes/ft_printf.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <sys/wait.h>
 
-typedef struct s_pipex
-{
-	int		infile;
-	int		outfile;
-	int		*pipes;        // Dynamic array for multiple pipes
-	int		cmd_count;
-	int		pipe_count;    // cmd_count - 1
-	int		argc;
-	char	**argv;        // Store command-line args for reference
-	char	**cmd_paths;   // Possible paths for commands
-	char	**cmd_args;    // Arguments for commands
-	char	**envp;        // Environment variables
-	char	*valid_cmd;    // Resolved command path
-	int		exit_status;   // Track last command’s exit status
-	int		here_doc;
-	pid_t *pids;
-}	t_pipex;
+// pipex.h
+#ifndef PIPEX_H
+# define PIPEX_H
 
+# include <unistd.h>
+# include <stdlib.h>
+# include <fcntl.h>
+# include <sys/wait.h>
+# include <errno.h>
+# include "ft_libft/libft/libft.h"
+# include "ft_libft/ft_printf/includes/ft_printf.h"
 
-void	create_pipes(int pipes[], int cmd_count);
-void	close_pipes(int pipes[], int pipe_count);
-void execute_child(t_pipex *pipex, int i, int pipes[], char *argv[]);
-void fork_and_execute(t_pipex *pipex, char *argv[]);
-void	process_files(t_pipex *pipex);
-int		update_count(char **path, int count);
-void init_pipex(t_pipex *pipex, char *infile, char *outfile, char **envp, int argc);
-char	*get_path_from_env(char *envp[]);
-void	filter_command(t_pipex *pipex);
-char	*find_command(char *cmd, t_pipex *pipex);
-void	execute_command(t_pipex *pipex, char *cmd);
-void	handle_single_command(t_pipex *pipex, char *cmd);
-void	fork_processes(t_pipex *pipex);
-void	free_str_array(char **array);
-void	free_pipex(t_pipex *pipex);
+typedef enum e_bool { false, true } t_bool;
+
+typedef struct s_pipex {
+    int in_fd;
+    int out_fd;
+    t_bool here_doc;
+    char **cmd_paths;
+    char ***cmd_args;
+    int cmd_count;
+	char **envp;
+	int exit_status;
+} t_pipex;
+
+void ft_exit_error(t_pipex *pipex, const char *msg);
+void ft_free_array(char **arr, int count);
+void ft_free_2d_array(char ***arr, int count);
+void free_pipex(t_pipex *pipex);
+void ft_init_pipex(t_pipex *pipex, char *infile, char *outfile);
+void ft_parse_cmds(t_pipex *pipex, char **argv);
+void ft_parse_paths(t_pipex *pipex);
+
+#endif
+
