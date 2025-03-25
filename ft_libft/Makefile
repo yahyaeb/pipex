@@ -17,11 +17,14 @@ AR = ar rcs
 
 LIBFT_DIR = libft
 PRINTF_DIR = ft_printf
+GNL_DIR = GNL
+
 
 LIBFT = $(LIBFT_DIR)/libft.a
 PRINTF = $(PRINTF_DIR)/libftprintf.a
+GNL = $(GNL_DIR)/libgnl.a
 
-all: $(LIBFT) $(PRINTF) $(NAME)
+all: $(GNL) $(LIBFT) $(PRINTF) $(NAME) 
 
 $(LIBFT):
 	make -C $(LIBFT_DIR)
@@ -29,17 +32,22 @@ $(LIBFT):
 $(PRINTF):
 	make -C $(PRINTF_DIR)
 
-$(NAME): $(LIBFT) $(PRINTF)
-	$(AR) $(NAME) $(LIBFT_DIR)/*.o $(PRINTF_DIR)/srcs/*.o  # Properly merging archives
+$(GNL):
+	make -C $(GNL_DIR)
+
+$(NAME): $(LIBFT) $(PRINTF) $(GNL)
+	$(AR) $(NAME) $(LIBFT_DIR)/*.o $(PRINTF_DIR)/srcs/*.o $(GNL_DIR)/*.o
 	ranlib $(NAME)  # Ensure indexing is correct
 
 clean:
 	make -C $(LIBFT_DIR) clean
 	make -C $(PRINTF_DIR) clean
+	make -C $(GNL_DIR) clean
 	
 fclean: clean
 	make -C $(LIBFT_DIR) fclean
 	make -C $(PRINTF_DIR) fclean
+	make -C $(GNL_DIR) fclean
 	rm -f $(NAME)
 
 re: fclean all

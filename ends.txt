@@ -1,14 +1,1 @@
-42_pipex_tester
-cat -e
-ends.txt
-ft_libft
-Makefile
-outfile
-parsing.c
-parsing.o
-pipex
-pipex.c
-pipex.h
-pipex.o
-pipex_utils.c
-start.txt
+yahya$$
