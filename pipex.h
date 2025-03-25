@@ -23,7 +23,6 @@
 # include "ft_libft/ft_printf/includes/ft_printf.h"
 # include "ft_libft/GNL/get_next_line.h"
 
-
 typedef enum e_bool
 {
 	false,

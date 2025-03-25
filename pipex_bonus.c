@@ -128,12 +128,14 @@ static void	execute_child(t_pipex *pipex, int in_fd, int out_fd, char **cmd)
 
 void	execute_multiple_cmds(t_pipex *pipex)
 {
-	int		i = 0;
+	int		i;
 	int		pipefd[2];
-	int		prev_fd = pipex->in_fd;
+	int		prev_fd;
 	pid_t	pid;
-	int 	status;
+	int		status;
 
+	i = 0;
+	prev_fd = pipex->in_fd;
 	while (i < pipex->cmd_count)
 	{
 		if (i < pipex->cmd_count - 1 && pipe(pipefd) == -1)
@@ -158,8 +160,12 @@ void	execute_multiple_cmds(t_pipex *pipex)
 		i++;
 	}
 	while (i-- > 0)
-		wait(&status); // ⬅️ Get child exit status
-	pipex->exit_status = WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+		wait(&status);
+	if (WIFEXITED(status))
+		pipex->exit_status = WEXITSTATUS(status);
+	else
+		pipex->exit_status = 1;
+
 }
 void handle_here_doc(t_pipex *pipex, int argc, char **argv)
 {
@@ -217,19 +223,12 @@ void handle_here_doc(t_pipex *pipex, int argc, char **argv)
 	unlink(".heredoc_tmp");
 	free_pipex(pipex);
 }
-void	handle_mandatory(t_pipex *pipex, char **argv)
+void	handle_mandatory(t_pipex *pipex, char **argv, int argc)
 {
-	ft_init_pipex(pipex, argv[1], argv[4]);
-	pipex->cmd_count = 2;
-	pipex->cmd_args = malloc(sizeof(char **) * pipex->cmd_count);
-	if (!pipex->cmd_args)
-		ft_exit_error(pipex, "malloc failed");
-	pipex->cmd_args[0] = ft_split(argv[2], ' ');
-	pipex->cmd_args[1] = ft_split(argv[3], ' ');
-	if (!pipex->cmd_args[0] || !pipex->cmd_args[1])
-		ft_exit_error(pipex, "split failed");
+	ft_init_pipex(pipex, argv[1], argv[argc - 1]);
+	ft_parse_cmds(pipex, argv);
 	ft_parse_paths(pipex);
-	execute_multiple_cmds(pipex);
+	ft_execute_pipex(pipex);
 	free_pipex(pipex);
 }
 
@@ -263,7 +262,7 @@ int	main(int argc, char **argv, char **envp)
 	if (argc >= 6 && strcmp(argv[1], "here_doc") == 0)
 		handle_here_doc(&pipex, argc, argv);
 	else if (argc == 5)
-		handle_mandatory(&pipex, argv);
+		handle_mandatory(&pipex, argv, argc);
 	else if (argc > 5)
 		handle_bonus(&pipex, argc, argv);
 	else
