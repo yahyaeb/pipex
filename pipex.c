@@ -62,7 +62,7 @@ void	execute_child(t_pipex *pipex, int in_fd, int out_fd, char **cmd)
 	cmd_path = find_cmd_path(cmd[0], pipex->cmd_paths);
 	if (!cmd_path)
 	{
-		fprintf(stderr, "%s: command not found\n", cmd[0]);
+		ft_printf("%s: command not found\n", cmd[0]);
 		free_pipex(pipex);
 		exit(127);
 	}
