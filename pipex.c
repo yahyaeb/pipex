@@ -27,60 +27,6 @@ void	ft_init_pipex(t_pipex *pipex, char *infile, char *outfile)
 	pipex->here_doc = false;
 }
 
-void	execute_first_child(t_pipex *pipex, int *pipefd)
-{
-	char	*cmd_path;
-
-	cmd_path = find_cmd_path(pipex->cmd_args[0][0], pipex->cmd_paths);
-	if (!cmd_path)
-	{
-		fprintf(stderr, "%s: command not found\n", pipex->cmd_args[0][0]);
-		free_pipex(pipex);
-		exit(127);
-	}
-	if (pipex->in_fd == -1 || dup2(pipex->in_fd, STDIN_FILENO) == -1
-		|| dup2(pipefd[1], STDOUT_FILENO) == -1)
-	{
-		free(cmd_path);
-		free_pipex(pipex);
-		perror("pipex: input redirection");
-		exit(1);
-	}
-	close(pipefd[0]);
-	close(pipefd[1]);
-	execve(cmd_path, pipex->cmd_args[0], pipex->envp);
-	perror("execve");
-	free(cmd_path);
-	exit(1);
-}
-
-void	execute_second_child(t_pipex *pipex, int *pipefd)
-{
-	char	*cmd_path;
-
-	cmd_path = find_cmd_path(pipex->cmd_args[1][0], pipex->cmd_paths);
-	if (!cmd_path)
-	{
-		fprintf(stderr, "%s: command not found\n", pipex->cmd_args[1][0]);
-		free_pipex(pipex);
-		exit(127);
-	}
-	if (dup2(pipefd[0], STDIN_FILENO) == -1 || pipex->out_fd == -1
-		|| dup2(pipex->out_fd, STDOUT_FILENO) == -1)
-	{
-		free(cmd_path);
-		free_pipex(pipex);
-		perror("pipex: output redirection");
-		exit(1);
-	}
-	close(pipefd[1]);
-	close(pipefd[0]);
-	execve(cmd_path, pipex->cmd_args[1], pipex->envp);
-	perror("execve");
-	free(cmd_path);
-	exit(1);
-}
-
 void	ft_execute_pipex(t_pipex *pipex)
 {
 	int		pipefd[2];
@@ -107,21 +53,52 @@ void	ft_execute_pipex(t_pipex *pipex)
 	pipex->exit_status = WEXITSTATUS(status);
 }
 
+void	execute_child(t_pipex *pipex, int in_fd, int out_fd, char **cmd)
+{
+	char	*cmd_path;
+
+	if (dup2(in_fd, STDIN_FILENO) == -1 || dup2(out_fd, STDOUT_FILENO) == -1)
+		ft_exit_error(pipex, "dup2 error");
+	cmd_path = find_cmd_path(cmd[0], pipex->cmd_paths);
+	if (!cmd_path)
+	{
+		fprintf(stderr, "%s: command not found\n", cmd[0]);
+		free_pipex(pipex);
+		exit(127);
+	}
+	execve(cmd_path, cmd, pipex->envp);
+	perror("execve");
+	free(cmd_path);
+	exit(1);
+}
+
+void	handle_mandatory(t_pipex *pipex, char **argv, int argc)
+{
+	ft_init_pipex(pipex, argv[1], argv[argc - 1]);
+	ft_parse_cmds(pipex, argv);
+	ft_parse_paths(pipex);
+	ft_execute_pipex(pipex);
+	free_pipex(pipex);
+}
+
 int	main(int argc, char **argv, char **envp)
 {
 	t_pipex	pipex;
 
 	pipex = (t_pipex){0};
-	if (argc != 5)
+	pipex.envp = envp;
+	if (argc >= 6 && ft_strcmp(argv[1], "here_doc") == 0)
+		handle_here_doc(&pipex, argc, argv);
+	else if (argc == 5)
+		handle_mandatory(&pipex, argv, argc);
+	else if (argc > 5)
+		handle_bonus(&pipex, argc, argv);
+	else
 	{
-		fprintf(stderr, "Usage: ./pipex infile \"cmd1\" \"cmd2\" outfile\n");
+		ft_printf("Usage:\n");
+		ft_printf("./pipex infile cmd1 cmd2 outfile\n");
+		ft_printf("./pipex here_doc LIMITER cmd1 ... outfile\n");
 		return (1);
 	}
-	pipex.envp = envp;
-	ft_init_pipex(&pipex, argv[1], argv[argc - 1]);
-	ft_parse_cmds(&pipex, argv);
-	ft_parse_paths(&pipex);
-	ft_execute_pipex(&pipex);
-	free_pipex(&pipex);
 	return (pipex.exit_status);
 }

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "pipex.h"
-#include <unistd.h>
 
 char	*find_cmd_path(char *cmd, char **paths)
 {
@@ -62,7 +61,7 @@ void	ft_parse_cmds(t_pipex *pipex, char **argv)
 		{
 			if (pipex->cmd_args[i])
 				ft_free_array(pipex->cmd_args[i], -1);
-			fprintf(stderr, "pipex: command not found\n");
+			ft_printf("pipex: command not found\n");
 			while (--i >= 0)
 				ft_free_array(pipex->cmd_args[i], -1);
 			free(pipex->cmd_args);

@@ -80,12 +80,31 @@ char	*final_line(char **buffer)
 }
 
 // Main function to get the next line
+int	read_until_newline(int fd, char **buffer, char *temp)
+{
+	int		bytes_read;
+	char	*newline_pos;
+
+	newline_pos = ft_strchr(*buffer, '\n');
+	while (newline_pos == NULL)
+	{
+		bytes_read = read(fd, temp, BUFFER_SIZE);
+		if (bytes_read <= 0)
+			return (bytes_read);
+		temp[bytes_read] = '\0';
+		*buffer = strjoin_and_free(*buffer, temp);
+		if (!*buffer)
+			return (-1);
+		newline_pos = ft_strchr(*buffer, '\n');
+	}
+	return (1);
+}
+
 char	*get_next_line(int fd)
 {
 	static char	*buffer;
 	char		*temp;
-	char		*newline_pos;
-	int			bytes_read;
+	int			status;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
@@ -94,19 +113,10 @@ char	*get_next_line(int fd)
 	temp = malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!temp)
 		return (NULL);
-	newline_pos = ft_strchr(buffer, '\n');
-	while (newline_pos == NULL)
-	{
-		bytes_read = read(fd, temp, BUFFER_SIZE);
-		if (bytes_read <= 0)
-			break ;
-		temp[bytes_read] = '\0';
-		buffer = strjoin_and_free(buffer, temp);
-		if (!buffer)
-			return (NULL);
-		newline_pos = ft_strchr(buffer, '\n');
-	}
+	status = read_until_newline(fd, &buffer, temp);
 	free(temp);
+	if (status == -1)
+		return (NULL);
 	return (final_line(&buffer));
 }
 

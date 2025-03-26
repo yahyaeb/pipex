@@ -14,12 +14,14 @@
 NAME = pipex
 CC = gcc
 CFLAGS = -g -fsanitize=address -Werror -Wextra -Wall
-LIBFT_DIR = ft_libft  # Ensure this is the correct relative path
-LIBFT = ./ft_libft/ft_libft.a  # Corrected path
-
-SRCS = pipex_bonus.c \
-		free_bonus.c \
-		parsing_bonus.c 
+LIBFT_DIR = ft_libft
+LIBFT = ./ft_libft/ft_libft.a
+SRCS = pipex.c \
+		free.c \
+		parsing.c \
+		pipex_bonus.c \
+		pipex_utils.c \
+		pipex_bonus_utils.c \
 
 OBJS = $(SRCS:.c=.o)
 
