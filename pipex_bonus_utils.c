@@ -12,13 +12,6 @@
 
 #include "pipex.h"
 
-void	check_here_doc_args(t_pipex *pipex, int argc)
-{
-	if (argc < 6)
-		ft_exit_error(pipex,
-			"Usage: ./pipex here_doc LIMITER cmd1 ... outfile");
-}
-
 void	read_heredoc_input(t_pipex *pipex, char *limiter)
 {
 	char	*line;

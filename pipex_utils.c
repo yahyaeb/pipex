@@ -16,7 +16,6 @@ void	handle_here_doc(t_pipex *pipex, int argc, char **argv)
 {
 	char	*limiter;
 
-	check_here_doc_args(pipex, argc);
 	pipex->here_doc = true;
 	limiter = argv[2];
 	read_heredoc_input(pipex, limiter);
@@ -50,7 +49,7 @@ void	handle_bonus(t_pipex *pipex, int argc, char **argv)
 	free_pipex(pipex);
 }
 
-static void	fork_and_run(t_pipex *pipex, int i, int prev_fd, int *pipefd)
+void	fork_and_run(t_pipex *pipex, int i, int prev_fd, int *pipefd)
 {
 	pid_t	pid;
 

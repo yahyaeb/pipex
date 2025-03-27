@@ -71,5 +71,6 @@ void	check_here_doc_args(t_pipex *pipex, int argc);
 void	read_heredoc_input(t_pipex *pipex, char *limiter);
 void	setup_here_doc_fds(t_pipex *pipex, char *outfile);
 void	parse_here_doc_commands(t_pipex *pipex, int argc, char **argv);
+void	fork_and_run(t_pipex *pipex, int i, int prev_fd, int *pipefd);
 
 #endif
